@@ -1,0 +1,71 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.1.0] - 2025-11-16
+
+### Added
+- Initial preview release with unified `SignalsWatch` class
+- **Unified API**: All functionality consolidated into a single `SignalsWatch` class
+- **Static factories**: `SignalsWatch.signal<T>()`, `SignalsWatch.computed<T>()` with auto-registration
+- **Async helpers**: `SignalsWatch.fromFuture<T>()`, `SignalsWatch.fromStream<T>()` for reactive async values
+- **Registry management**: `register()`, `unregister()`, `size`, `disposeAll()` for signal lifecycle
+- **Selective observer**: `initializeSelectiveObserver()` for debug logging of labeled signals only
+- 4 constructor patterns:
+  - Default constructor with custom `read` function
+  - `.fromSignal()` for single signals
+  - `.fromSignals()` for batch updates from multiple signals
+  - `.select()` for selector pattern
+- Lifecycle callbacks:
+  - `onInit` - Called once on initialization
+  - `onValueUpdated` - Called when value changes
+  - `onAfterBuild` - Called post-frame after every build
+  - `onDispose` - Called when widget is disposed
+- Flexible callback signatures supporting both `(T)` and `(T, T?)` patterns
+- Conditional updates:
+  - `shouldRebuild` - Control when widget rebuilds
+  - `shouldNotify` - Control when callbacks fire
+  - Custom `equals` - Custom equality checking
+- Timing control:
+  - `debounce` - Wait after last change before updating
+  - `throttle` - Minimum time between updates
+- Error handling:
+  - `onError` - Error callback
+  - `errorBuilder` - Custom error UI (defaults to red text)
+  - `loadingBuilder` - Custom loading UI (defaults to CircularProgressIndicator)
+- Debug tools:
+  - `debugLabel` - Label for logging
+  - `debugPrint` - Auto-log all lifecycle events
+  - `SelectiveSignalsObserver` - Track only labeled signals globally
+- Production-ready safety:
+  - Timer cancellation on dispose
+  - Mounted checks before callbacks
+  - Assertions preventing misuse (debounce+throttle, empty signals list)
+  - Try-catch in dispose to prevent exceptions
+- Modular architecture:
+  - Library parts for readability (registry, observer, async, core widget)
+  - Single public API surface via `SignalsWatch` class
+  - Private implementation details hidden
+- Comprehensive documentation and examples
+- StatelessWidget-friendly API
+
+### Design Decisions
+- **Unified class approach**: All features consolidated into `SignalsWatch` for simplicity
+- **Static factories**: `signal()` and `computed()` replace standalone functions, auto-register for cleanup
+- **Modular parts**: Code split into logical parts while maintaining single public API
+- **Auto-registration**: All created signals tracked automatically with cleanup on dispose
+- Used `Function.apply()` to support flexible callback signatures
+- Timers check `mounted` state before executing callbacks
+- Dispose method uses try-catch to prevent dispose exceptions
+- Assertions added to prevent common mistakes at compile time
+
+## [Unreleased]
+
+### Planned
+- Animation support with `AnimationController` integration
+- More comprehensive test coverage
+- Performance benchmarks
+- Additional async utilities (retries, caching, etc.)
