@@ -4,7 +4,7 @@
 
 ### Package Information
 - **Name**: `signals_watch`
-- **Version**: 0.3.0
+- **Version**: 0.3.1
 - **License**: MIT
 - **Dependencies**: Flutter SDK >=3.10.0, signals ^6.2.0
 

@@ -1,3 +1,10 @@
+## [0.3.1] - 2025-11-17
+
+### Fixed/Docs
+- Update README to document v0.3.0 signal-level lifecycle callbacks, widget override precedence, and reset API
+- Example app: add trailing commas and minor formatting fixes to satisfy analyzer lints (no behavior changes)
+- No functional code changes in library APIs
+
 ## [0.3.0] - 2025-11-17
 
 ### Added

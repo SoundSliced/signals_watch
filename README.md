@@ -16,7 +16,8 @@ A unified, production-ready reactive framework for `signals_flutter` with auto-r
 
 ### 🎯 Reactive Widget
 - **Multiple modes**: Single signal, multiple signals, custom read function, selector pattern
-- **Lifecycle callbacks**: `onInit`, `onValueUpdated`, `onAfterBuild`, `onDispose`
+- **Lifecycle callbacks**: `onInit`, `onValueUpdated`, `onAfterBuild`, `onDispose` at both signal and widget levels
+- **Callback override precedence**: Widget callbacks override signal callbacks (NEW in 0.3.0)
 - **Optional previous value**: Callbacks can accept both current and previous values
 - **Effect replacement**: `onValueUpdated` (with optional previous value) replaces the need for creating a manual `effect(() { ... })` in `signals_flutter` when you just want to react to changes of the watched signals.
 - **StatelessWidget friendly**: No need to write StatefulWidget boilerplate
@@ -52,7 +53,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  signals_watch: ^0.3.0
+  signals_watch: ^0.3.1
 ```
 
 ## Quick Start
@@ -92,8 +93,25 @@ class MyWidget extends StatelessWidget {
 // Create a signal (auto-registered for cleanup)
 final counter = SignalsWatch.signal(0);
 
+// Signal with lifecycle callbacks (NEW in 0.3.0)
+final user = SignalsWatch.signal(
+  User.empty(),
+  debugLabel: 'user',
+  onInit: () => print('User signal initialized'),
+  onValueUpdated: (value, previous) => print('User changed: $previous -> $value'),
+  onAfterBuild: () => print('Frame rendered with user data'),
+  onDispose: () => print('User signal disposed'),
+);
+
 // Create a computed signal (auto-registered)
 final doubled = SignalsWatch.computed(() => counter.value * 2);
+
+// Computed with callbacks (NEW in 0.3.0)
+final fullName = SignalsWatch.computed(
+  () => '${firstName.value} ${lastName.value}',
+  debugLabel: 'fullName',
+  onValueUpdated: (name) => print('Full name: $name'),
+);
 
 // Create from Future
 final userData = SignalsWatch.fromFuture(
@@ -102,12 +120,42 @@ final userData = SignalsWatch.fromFuture(
   debugLabel: 'user-data',
 );
 
+// fromFuture with callbacks (NEW in 0.3.0)
+final profile = SignalsWatch.fromFuture(
+  fetchProfile(),
+  initialValue: null,
+  onInit: () => print('Loading profile...'),
+  onValueUpdated: (data) => print('Profile loaded: $data'),
+  onDispose: () => print('Profile signal disposed'),
+);
+
 // Create from Stream
 final messages = SignalsWatch.fromStream(
   messageStream,
   initialValue: [],
   cancelOnError: false,
 );
+
+// fromStream with callbacks (NEW in 0.3.0)
+final chatMessages = SignalsWatch.fromStream(
+  chatStream,
+  initialValue: <Message>[],
+  onInit: () => print('Listening to chat stream'),
+  onValueUpdated: (messages) => print('New messages: ${messages.length}'),
+  onDispose: () => print('Stopped listening to chat'),
+);
+```
+
+### Signal Methods (NEW in 0.3.0)
+
+```dart
+// Reset signal to initial value
+counter.reset();  // Returns to the value passed to SignalsWatch.signal(initialValue)
+
+// Works with all signal types
+user.reset();
+computed.reset();  // Recomputes from dependencies
+asyncSignal.reset();  // Returns to initialValue
 ```
 
 ### Registry Management
@@ -289,6 +337,82 @@ onValueUpdated: (value) => print(value),
 
 // With previous value
 onValueUpdated: (value, previous) => print('$previous -> $value'),
+```
+
+### Lifecycle Callbacks (NEW in 0.3.0)
+
+#### Signal-Level Callbacks
+Define callbacks when creating signals - they apply to all widgets observing that signal:
+
+```dart
+final counter = SignalsWatch.signal(
+  0,
+  onInit: () => print('Counter initialized'),
+  onValueUpdated: (value, previous) => logAnalytics('counter', value),
+  onDispose: () => print('Counter disposed'),
+);
+
+// All widgets observing this signal inherit these callbacks
+counter.observe((value) => Text('$value'));
+```
+
+#### Widget-Level Callbacks
+Define callbacks on the widget - they override signal-level callbacks:
+
+```dart
+// Widget callback overrides signal callback for this widget only
+counter.observe(
+  (value) => Text('$value'),
+  onValueUpdated: (value) => print('Widget-specific callback: $value'),
+  // Signal's onValueUpdated is NOT called for this widget
+);
+```
+
+#### Callback Precedence Rules
+1. **Widget callbacks override signal callbacks** - When you provide a callback on the widget, the signal's callback is NOT called
+2. **Separate lifecycle hooks** - Override is per-callback type (`onInit`, `onValueUpdated`, etc.)
+3. **Other widgets unaffected** - Overriding in one widget doesn't affect other widgets
+
+```dart
+final user = SignalsWatch.signal(
+  User(),
+  onValueUpdated: (u) => print('Signal: User updated'),
+  onDispose: () => print('Signal: User disposed'),
+);
+
+// Widget A: Uses signal callbacks
+user.observe((u) => Text(u.name));  // Prints "Signal: User updated"
+
+// Widget B: Overrides onValueUpdated, inherits onDispose
+user.observe(
+  (u) => Text(u.email),
+  onValueUpdated: (u) => print('Widget B: User updated'),  // Overrides signal callback
+  // Still inherits signal's onDispose
+);
+
+// Widget C: Overrides both callbacks
+user.observe(
+  (u) => Text(u.age.toString()),
+  onValueUpdated: (u) => print('Widget C: User updated'),
+  onDispose: () => print('Widget C: Disposed'),
+);
+```
+
+#### Reset Method (NEW in 0.3.0)
+All signals can be reset to their initial value:
+
+```dart
+final counter = SignalsWatch.signal(0);
+counter.value = 10;
+counter.reset();  // Returns to 0
+
+// Works with computed signals (re-evaluates)
+final doubled = SignalsWatch.computed(() => counter.value * 2);
+doubled.reset();  // Re-evaluates computation
+
+// Works with async signals (returns to initialValue)
+final data = SignalsWatch.fromFuture(fetchData(), initialValue: null);
+data.reset();  // Returns to null
 ```
 
 ## Debug Tools

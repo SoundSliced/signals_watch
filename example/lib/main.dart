@@ -354,7 +354,8 @@ class _WidgetOverrideExampleState extends State<WidgetOverrideExample> {
     0,
     debugLabel: 'override.sig',
     onValueUpdated: (v, p) => debugPrint(
-        '[signal-level] $p -> $v (suppressed if any widget overrides)'),
+      '[signal-level] $p -> $v (suppressed if any widget overrides)',
+    ),
   );
 
   @override
@@ -392,7 +393,8 @@ class _WidgetOverrideExampleState extends State<WidgetOverrideExample> {
         ),
         const SizedBox(height: 4),
         const Text(
-            'Check logs: only [widget-level A] should appear; signal-level suppressed.'),
+          'Check logs: only [widget-level A] should appear; signal-level suppressed.',
+        ),
       ],
     );
   }
@@ -419,7 +421,8 @@ class _CustomEqualsExampleState extends State<CustomEqualsExample> {
           equals: (User a, User b) => a.age == b.age, // ignore name changes
           onValueUpdated: (User v, User? p) => debugPrint('[equals] $p -> $v'),
           builder: (user) => Text(
-              'User: ${user.name}, ${user.age} (rebuilds only when age changes)'),
+            'User: ${user.name}, ${user.age} (rebuilds only when age changes)',
+          ),
         ),
         const SizedBox(height: 8),
         Row(
@@ -607,7 +610,8 @@ class _ShouldRebuildExampleState extends State<ShouldRebuildExample> {
           builder: (v) {
             buildCount++;
             return Text(
-                'Value: $v | buildCount: $buildCount (rebuild on even)');
+              'Value: $v | buildCount: $buildCount (rebuild on even)',
+            );
           },
         ),
         const SizedBox(height: 8),
@@ -737,7 +741,8 @@ class DebugTraceExample extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         const Text(
-            'Check console for SelectiveSignalsObserver logs for labeled signals.'),
+          'Check console for SelectiveSignalsObserver logs for labeled signals.',
+        ),
       ],
     );
   }
