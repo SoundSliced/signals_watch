@@ -36,7 +36,7 @@
 ///
 /// // Debug signals with selective observer
 /// void main() {
-///   SignalsWatch.initializeSelectiveObserver();
+///   SignalsWatch.initializeSignalsObserver();
 ///   runApp(MyApp());
 /// }
 /// ```
@@ -51,6 +51,7 @@ import 'package:signals/signals_flutter.dart';
 export 'package:signals/signals_flutter.dart' hide signal, computed;
 
 // Internal parts for readability and maintainability.
+part 'src/signals_watch_metadata.dart';
 part 'src/signals_watch_registry.dart';
 part 'src/signals_watch_observer.dart';
 part 'src/signals_watch_async.dart';

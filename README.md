@@ -12,7 +12,7 @@ A unified, production-ready reactive framework for `signals_flutter` with auto-r
 - **Static factories**: `SignalsWatch.signal<T>()`, `SignalsWatch.computed<T>()` with auto-registration
 - **Async helpers**: `SignalsWatch.fromFuture<T>()`, `SignalsWatch.fromStream<T>()` for reactive async values
 - **Registry management**: Track and dispose signals globally with `register()`, `disposeAll()`, `size`
-- **Selective observer**: `initializeSelectiveObserver()` for debug logging of labeled signals only
+- **Selective observer**: `initializeSignalsObserver()` for debug logging of labeled signals only
 
 ### 🎯 Reactive Widget
 - **Multiple modes**: Single signal, multiple signals, custom read function, selector pattern
@@ -36,7 +36,7 @@ A unified, production-ready reactive framework for `signals_flutter` with auto-r
 - **`loadingBuilder`**: Custom loading UI (defaults to CircularProgressIndicator)
 
 ### 🔍 Debug & Development
-- **Selective observer**: Log only labeled signals with `initializeSelectiveObserver()`
+- **Selective observer**: Log only labeled signals with `initializeSignalsObserver()`
 - **Auto-logging**: Built-in `debugPrint` for lifecycle events
 - **Debug labels**: Name signals for easier tracking
 
@@ -52,7 +52,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  signals_watch: ^0.2.1
+  signals_watch: ^0.3.0
 ```
 
 ## Quick Start
@@ -302,7 +302,7 @@ import 'package:signals_watch/signals_watch.dart';
 
 void main() {
   // Enable selective signal tracking (only labeled signals)
-  SignalsWatch.initializeSelectiveObserver();
+  SignalsWatch.initializeSignalsObserver();
   
   // Only signals with labels will be logged
   final counter = SignalsWatch.signal(0, debugLabel: 'counter');

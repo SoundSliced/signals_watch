@@ -9,11 +9,23 @@ s.Signal<T?> _signalFromFuture<T>(
   String? debugLabel,
   bool autoDispose = false,
   void Function(Object error, StackTrace stackTrace)? onError,
+  Function? onInit,
+  Function? onValueUpdated,
+  Function? onAfterBuild,
+  Function? onDispose,
+  bool debugTrace = false,
+  Map<String, dynamic>? metadata,
 }) {
   final sig = SignalsWatch.signal<T?>(
     initialValue,
     debugLabel: debugLabel,
     autoDispose: autoDispose,
+    onInit: onInit,
+    onValueUpdated: onValueUpdated,
+    onAfterBuild: onAfterBuild,
+    onDispose: onDispose,
+    debugTrace: debugTrace,
+    metadata: metadata,
   );
   future.then((value) {
     sig.value = value;
@@ -33,11 +45,23 @@ s.Signal<T?> _signalFromStream<T>(
   bool autoDispose = false,
   bool cancelOnError = false,
   void Function(Object error, StackTrace stackTrace)? onError,
+  Function? onInit,
+  Function? onValueUpdated,
+  Function? onAfterBuild,
+  Function? onDispose,
+  bool debugTrace = false,
+  Map<String, dynamic>? metadata,
 }) {
   final sig = SignalsWatch.signal<T?>(
     initialValue,
     debugLabel: debugLabel,
     autoDispose: autoDispose,
+    onInit: onInit,
+    onValueUpdated: onValueUpdated,
+    onAfterBuild: onAfterBuild,
+    onDispose: onDispose,
+    debugTrace: debugTrace,
+    metadata: metadata,
   );
 
   late final StreamSubscription<T> sub;

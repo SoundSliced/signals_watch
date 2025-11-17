@@ -4,9 +4,9 @@
 
 ### Package Information
 - **Name**: `signals_watch`
-- **Version**: 0.2.1
+- **Version**: 0.3.0
 - **License**: MIT
-- **Dependencies**: Flutter SDK >=3.10.0, signals ^5.5.0
+- **Dependencies**: Flutter SDK >=3.10.0, signals ^6.2.0
 
 ### Package Structure
 
@@ -51,7 +51,7 @@ All files checked for errors:
 - ✅ `analysis_options.yaml` - No errors
 - ✅ `.gitignore` - No errors
 
-### Features Implemented
+### Features Implemented (0.3.0)
 
 #### Core Features
 1. ✅ **Unified SignalsWatch Class**:
@@ -121,7 +121,7 @@ All files checked for errors:
 16. ✅ Selective observer - labeled signals only
 17. ✅ Edge cases
 
-Total: 17 test groups
+Total: 43 tests passing (28 legacy + 15 new v0.3.0)
 
 ### Example App
 

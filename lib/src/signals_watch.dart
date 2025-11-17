@@ -143,40 +143,110 @@ class SignalsWatch<T> extends StatefulWidget {
       _registryUnregister(signal);
 
   /// Auto-registering replacement for `signals.signal`.
+  ///
+  /// Optionally accepts lifecycle callbacks that will be used as defaults
+  /// when observing this signal (widget-level callbacks override these).
   static s.Signal<T> signal<T>(
     T initialValue, {
     String? debugLabel,
     bool autoDispose = false,
+    Function? onInit,
+    Function? onValueUpdated,
+    Function? onAfterBuild,
+    Function? onDispose,
+    bool debugTrace = false,
+    Map<String, dynamic>? metadata,
   }) {
     final created = s.signal<T>(
       initialValue,
       debugLabel: debugLabel,
       autoDispose: autoDispose,
     );
+
+    // Store metadata if any lifecycle callbacks or metadata provided
+    if (onInit != null ||
+        onValueUpdated != null ||
+        onAfterBuild != null ||
+        onDispose != null ||
+        debugTrace ||
+        metadata != null) {
+      _storeSignalMetadata(
+        created,
+        _SignalMetadata<T>(
+          initialValue: initialValue,
+          onInit: onInit,
+          onValueUpdated: onValueUpdated,
+          onAfterBuild: onAfterBuild,
+          onDispose: onDispose,
+          debugTrace: debugTrace,
+          metadata: metadata,
+        ),
+      );
+    }
+
     return register(created);
   }
 
   /// Auto-registering replacement for `signals.computed`.
+  ///
+  /// Optionally accepts lifecycle callbacks that will be used as defaults
+  /// when observing this signal (widget-level callbacks override these).
   static s.Computed<T> computed<T>(
     T Function() compute, {
     String? debugLabel,
     bool autoDispose = false,
+    Function? onInit,
+    Function? onValueUpdated,
+    Function? onAfterBuild,
+    Function? onDispose,
+    bool debugTrace = false,
+    Map<String, dynamic>? metadata,
   }) {
     final created = s.computed<T>(
       compute,
       debugLabel: debugLabel,
       autoDispose: autoDispose,
     );
+
+    // Store metadata if any lifecycle callbacks or metadata provided
+    if (onInit != null ||
+        onValueUpdated != null ||
+        onAfterBuild != null ||
+        onDispose != null ||
+        debugTrace ||
+        metadata != null) {
+      _storeSignalMetadata(
+        created,
+        _SignalMetadata<T>(
+          onInit: onInit,
+          onValueUpdated: onValueUpdated,
+          onAfterBuild: onAfterBuild,
+          onDispose: onDispose,
+          debugTrace: debugTrace,
+          metadata: metadata,
+        ),
+      );
+    }
+
     return register(created);
   }
 
   /// Create a signal from a Future.
+  ///
+  /// Optionally accepts lifecycle callbacks that will be used as defaults
+  /// when observing this signal (widget-level callbacks override these).
   static s.Signal<T?> fromFuture<T>(
     Future<T> future, {
     T? initialValue,
     String? debugLabel,
     bool autoDispose = false,
     void Function(Object error, StackTrace stackTrace)? onError,
+    Function? onInit,
+    Function? onValueUpdated,
+    Function? onAfterBuild,
+    Function? onDispose,
+    bool debugTrace = false,
+    Map<String, dynamic>? metadata,
   }) =>
       _signalFromFuture<T>(
         future,
@@ -184,9 +254,18 @@ class SignalsWatch<T> extends StatefulWidget {
         debugLabel: debugLabel,
         autoDispose: autoDispose,
         onError: onError,
+        onInit: onInit,
+        onValueUpdated: onValueUpdated,
+        onAfterBuild: onAfterBuild,
+        onDispose: onDispose,
+        debugTrace: debugTrace,
+        metadata: metadata,
       );
 
   /// Create a signal from a Stream.
+  ///
+  /// Optionally accepts lifecycle callbacks that will be used as defaults
+  /// when observing this signal (widget-level callbacks override these).
   static s.Signal<T?> fromStream<T>(
     Stream<T> stream, {
     T? initialValue,
@@ -194,6 +273,12 @@ class SignalsWatch<T> extends StatefulWidget {
     bool autoDispose = false,
     bool cancelOnError = false,
     void Function(Object error, StackTrace stackTrace)? onError,
+    Function? onInit,
+    Function? onValueUpdated,
+    Function? onAfterBuild,
+    Function? onDispose,
+    bool debugTrace = false,
+    Map<String, dynamic>? metadata,
   }) =>
       _signalFromStream<T>(
         stream,
@@ -202,6 +287,12 @@ class SignalsWatch<T> extends StatefulWidget {
         autoDispose: autoDispose,
         cancelOnError: cancelOnError,
         onError: onError,
+        onInit: onInit,
+        onValueUpdated: onValueUpdated,
+        onAfterBuild: onAfterBuild,
+        onDispose: onDispose,
+        debugTrace: debugTrace,
+        metadata: metadata,
       );
 
   /// Initialize the global SignalsObserver with a selective logger
@@ -276,6 +367,40 @@ class _SignalsWatchState<T> extends State<SignalsWatch<T>> {
   Timer? _debounceTimer;
   Timer? _throttleTimer;
 
+  // Cache merged callbacks
+  Function? _effectiveOnInit;
+  Function? _effectiveOnValueUpdated;
+  Function? _effectiveOnAfterBuild;
+  Function? _effectiveOnDispose;
+
+  // Track if this widget is overriding the signal's onValueUpdated
+  bool _isOverridingCallback = false;
+
+  /// Get effective callbacks by merging widget-level and signal-level callbacks.
+  /// Widget-level callbacks take precedence over signal-level ones.
+  void _initializeCallbacks() {
+    // Try to get signal-level callbacks if we're watching a single signal
+    _SignalMetadata<dynamic>? signalMetadata;
+    if (widget._signal != null) {
+      signalMetadata = _getSignalMetadata(widget._signal!);
+    }
+
+    // Widget callbacks override signal callbacks
+    _effectiveOnInit = widget.onInit ?? signalMetadata?.onInit;
+    _effectiveOnValueUpdated =
+        widget.onValueUpdated ?? signalMetadata?.onValueUpdated;
+    _effectiveOnAfterBuild =
+        widget.onAfterBuild ?? signalMetadata?.onAfterBuild;
+    _effectiveOnDispose = widget.onDispose ?? signalMetadata?.onDispose;
+
+    // Track if we're overriding the signal's callback
+    if (widget.onValueUpdated != null &&
+        signalMetadata?.onValueUpdated != null) {
+      _isOverridingCallback = true;
+      signalMetadata?._overrideCount++;
+    }
+  }
+
   bool _valuesEqual(T a, T b) {
     if (widget.equals != null) {
       return widget.equals!(a, b);
@@ -333,6 +458,10 @@ class _SignalsWatchState<T> extends State<SignalsWatch<T>> {
   @override
   void initState() {
     super.initState();
+
+    // Initialize merged callbacks
+    _initializeCallbacks();
+
     try {
       _currentValue = _readValue();
       _error = null;
@@ -341,7 +470,7 @@ class _SignalsWatchState<T> extends State<SignalsWatch<T>> {
           '[${widget.debugLabel ?? 'SignalsWatch'}] Init: $_currentValue',
         );
       }
-      _callCallback(widget.onInit, _currentValue, null);
+      _callCallback(_effectiveOnInit, _currentValue, null);
     } catch (e) {
       _error = e;
       _isLoading = false;
@@ -356,9 +485,17 @@ class _SignalsWatchState<T> extends State<SignalsWatch<T>> {
     _throttleTimer?.cancel();
     _throttleTimer = null;
 
+    // Decrement override count if we were overriding
+    if (_isOverridingCallback && widget._signal != null) {
+      final signalMetadata = _getSignalMetadata(widget._signal!);
+      if (signalMetadata != null && signalMetadata._overrideCount > 0) {
+        signalMetadata._overrideCount--;
+      }
+    }
+
     // Call onDispose regardless of error state (user may want to cleanup)
     try {
-      _callCallback(widget.onDispose, _currentValue, null);
+      _callCallback(_effectiveOnDispose, _currentValue, null);
       if (widget.debugPrint) {
         debugPrint(
           '[${widget.debugLabel ?? 'SignalsWatch'}] Dispose: $_currentValue',
@@ -385,6 +522,7 @@ class _SignalsWatchState<T> extends State<SignalsWatch<T>> {
     // Determine if we should rebuild
     bool shouldRebuildWidget =
         widget.shouldRebuild?.call(newValue, oldValue) ?? !areEqual;
+
     // Never trigger a "rebuild" decision due solely to an equal value on the very first build
     // even if a custom shouldRebuild returns true for equal values.
     if (_isFirstBuild && areEqual) {
@@ -394,6 +532,7 @@ class _SignalsWatchState<T> extends State<SignalsWatch<T>> {
     // Determine if we should notify
     final shouldNotifyCallback =
         widget.shouldNotify?.call(newValue, oldValue) ?? !areEqual;
+    final effectiveShouldNotify = shouldNotifyCallback;
 
     if (widget.debugPrint && !areEqual) {
       debugPrint(
@@ -405,26 +544,29 @@ class _SignalsWatchState<T> extends State<SignalsWatch<T>> {
     _currentValue = newValue;
 
     // Handle notification with debounce/throttle
-    if (!_isFirstBuild && shouldNotifyCallback) {
+    // Call widget-level callback if explicitly set (signal-level is handled by effect)
+    if (!_isFirstBuild &&
+        effectiveShouldNotify &&
+        widget.onValueUpdated != null) {
       if (widget.debounce != null) {
         _debounceTimer?.cancel();
         _debounceTimer = Timer(widget.debounce!, () {
           // Check if widget is still mounted before calling callback
           if (mounted) {
-            _callCallback(widget.onValueUpdated, newValue, oldValue);
+            _callCallback(_effectiveOnValueUpdated, newValue, oldValue);
           }
         });
       } else if (widget.throttle != null) {
         if (_throttleTimer == null || !_throttleTimer!.isActive) {
           // Allow call and start throttle window
-          _callCallback(widget.onValueUpdated, newValue, oldValue);
+          _callCallback(_effectiveOnValueUpdated, newValue, oldValue);
           _throttleTimer?.cancel();
           _throttleTimer = Timer(widget.throttle!, () {
             // Window ended; next change can trigger again
           });
         }
       } else {
-        _callCallback(widget.onValueUpdated, newValue, oldValue);
+        _callCallback(_effectiveOnValueUpdated, newValue, oldValue);
       }
     }
 
@@ -468,10 +610,10 @@ class _SignalsWatchState<T> extends State<SignalsWatch<T>> {
         }
 
         // Schedule onAfterBuild post-frame
-        if (widget.onAfterBuild != null) {
+        if (_effectiveOnAfterBuild != null) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (mounted) {
-              _callCallback(widget.onAfterBuild, newValue, _previousValue);
+              _callCallback(_effectiveOnAfterBuild, newValue, _previousValue);
             }
           });
         }

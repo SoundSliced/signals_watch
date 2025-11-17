@@ -15,6 +15,8 @@ Use this checklist every time before committing, tagging, and publishing a new v
 - [ ] All code examples in `README.md` are updated and accurate
 - [ ] `PACKAGE_SUMMARY.md` reflects new features and correct version
 - [ ] Migration guides and usage examples are current
+ - [ ] Example app reflects all new features introduced in this release (computed, async, lifecycle callbacks, overrides, reset, shouldRebuild/shouldNotify, equals, error/loading builders, debug observer)
+ - [ ] Example app sections are updated or added to demonstrate new APIs and patterns
 
 ## 3. Code & Tests
 - [ ] All code changes are committed

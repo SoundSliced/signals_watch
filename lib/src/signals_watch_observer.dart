@@ -1,7 +1,7 @@
 part of '../signals_watch.dart';
 
 /// Private selective observer implementation used by
-/// SignalsWatch.initializeSelectiveObserver().
+/// SignalsWatch.initializeSignalsObserver().
 class _SelectiveSignalsObserver implements SignalsObserver {
   @override
   void onSignalCreated<T>(Signal<T> signal, T value) {

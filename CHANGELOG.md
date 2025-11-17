@@ -1,3 +1,19 @@
+## [0.3.0] - 2025-11-17
+
+### Added
+- Signal-level lifecycle callbacks for all signal types (signal, computed, fromFuture, fromStream)
+- Widget-level callbacks now override signal-level callbacks with proper precedence
+- `.reset()` method on signals to restore initial value and trigger callbacks
+- Async helpers now forward lifecycle callbacks consistently
+- Internal metadata registry for initial values and callbacks
+
+### Changed
+- Documentation updated to reflect lifecycle callbacks, overrides, and reset API
+- Example app updated to use the observer initializer and fluent APIs
+
+### Removed
+- Silent update utilities (`.unotified()`, `.setUnotified()`, `.isSilent`) and manual notify (`.notify()`) were removed from scope due to incompatibility with signals_flutter's Watch widget automatic rebuild behavior
+
 ## [0.2.1] - 2025-11-17
 
 ### Maintenance
