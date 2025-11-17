@@ -1,3 +1,7 @@
+## [0.2.1] - 2025-11-17
+
+### Maintenance
+- Republish after sensitive file cleanup and doc corrections. No code changes.
 # Changelog
 
 All notable changes to this project will be documented in this file.
