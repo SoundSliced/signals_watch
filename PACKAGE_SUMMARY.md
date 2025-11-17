@@ -4,7 +4,7 @@
 
 ### Package Information
 - **Name**: `signals_watch`
-- **Version**: 1.0.0
+- **Version**: 0.2.0
 - **License**: MIT
 - **Dependencies**: Flutter SDK >=3.10.0, signals ^5.5.0
 
@@ -135,7 +135,7 @@ Total: 17 test groups
 ### Documentation
 
 - ✅ **README.md**: Complete API reference, quick start, examples, migration guide
-- ✅ **CHANGELOG.md**: Version 1.0.0 with all features documented
+- ✅ **CHANGELOG.md**: Version 0.2.0 with all features documented
 - ✅ **Inline docs**: Comprehensive dartdoc comments on all public APIs
 - ✅ **Examples**: 5 working examples in example/lib/main.dart
 - ✅ **Tests**: 11 test groups demonstrating usage patterns

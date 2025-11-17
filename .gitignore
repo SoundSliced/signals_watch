@@ -46,3 +46,11 @@ app.*.map.json
 
 # Coverage
 coverage/
+
+# Security: block accidental key commits
+*.key
+*.pem
+*.pub
+id_rsa*
+id_ed25519*
+§*
