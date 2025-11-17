@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:signals_watch/signals_watch.dart';
@@ -435,6 +437,249 @@ void main() {
 
       // Callback should not be called
       expect(callbackCalled, false);
+    });
+  });
+
+  group('SignalObserveExtension', () {
+    testWidgets('renders using fluent .observe() syntax', (tester) async {
+      final counter = SignalsWatch.signal(0);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: counter.observe((value) => Text('$value')),
+        ),
+      );
+
+      expect(find.text('0'), findsOneWidget);
+    });
+
+    testWidgets('rebuilds on value change with .observe()', (tester) async {
+      final counter = SignalsWatch.signal(0);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: counter.observe((value) => Text('$value')),
+        ),
+      );
+
+      expect(find.text('0'), findsOneWidget);
+
+      counter.value = 5;
+      await tester.pump();
+
+      expect(find.text('5'), findsOneWidget);
+    });
+
+    testWidgets('supports all parameters with .observe()', (tester) async {
+      final counter = SignalsWatch.signal(0);
+      int initCount = 0;
+      final updates = <int>[];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: counter.observe(
+            (value) => Text('$value'),
+            onInit: (value) => initCount++,
+            onValueUpdated: (value) => updates.add(value),
+            debounce: const Duration(milliseconds: 50),
+          ),
+        ),
+      );
+
+      expect(initCount, 1);
+      expect(find.text('0'), findsOneWidget);
+
+      counter.value = 1;
+      await tester.pump();
+      expect(updates, isEmpty); // Debounced
+
+      await tester.pump(const Duration(milliseconds: 50));
+      expect(updates, [1]);
+    });
+
+    testWidgets('works with computed signals', (tester) async {
+      final counter = SignalsWatch.signal(0);
+      final doubled = SignalsWatch.computed(() => counter.value * 2);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: doubled.observe((value) => Text('$value')),
+        ),
+      );
+
+      expect(find.text('0'), findsOneWidget);
+
+      counter.value = 5;
+      await tester.pump();
+
+      expect(find.text('10'), findsOneWidget);
+    });
+
+    testWidgets('works with fromFuture signals', (tester) async {
+      final futureSignal = SignalsWatch.fromFuture(
+        Future.delayed(const Duration(milliseconds: 10), () => 42),
+        initialValue: 0,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: futureSignal.observe((value) => Text('$value')),
+          ),
+        ),
+      );
+
+      expect(find.text('0'), findsOneWidget);
+
+      await tester.pumpAndSettle();
+      expect(find.text('42'), findsOneWidget);
+    });
+
+    testWidgets('works with fromStream signals', (tester) async {
+      final streamController = StreamController<int>();
+      final streamSignal = SignalsWatch.fromStream(
+        streamController.stream,
+        initialValue: 0,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: streamSignal.observe((value) => Text('$value')),
+          ),
+        ),
+      );
+
+      expect(find.text('0'), findsOneWidget);
+
+      streamController.add(99);
+      await tester.pump();
+      expect(find.text('99'), findsOneWidget);
+
+      streamController.close();
+    });
+
+    testWidgets('.selectObserve() only rebuilds when selected value changes',
+        (tester) async {
+      final userSignal = SignalsWatch.signal(User('John', 25));
+      int buildCount = 0;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: userSignal.selectObserve(
+            (user) => (user as User).age,
+            (age) {
+              buildCount++;
+              return Text('$age');
+            },
+          ),
+        ),
+      );
+
+      expect(buildCount, 1);
+      expect(find.text('25'), findsOneWidget);
+
+      // Change name only (age unchanged)
+      userSignal.value = User('Jane', 25);
+      await tester.pump();
+      expect(buildCount, 1); // No rebuild
+      expect(find.text('25'), findsOneWidget);
+
+      // Change age
+      userSignal.value = User('Jane', 26);
+      await tester.pump();
+      expect(buildCount, 2); // Rebuild
+      expect(find.text('26'), findsOneWidget);
+    });
+
+    testWidgets('.selectObserve() supports all parameters', (tester) async {
+      final userSignal = SignalsWatch.signal(User('John', 25));
+      final updates = <int>[];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: userSignal.selectObserve(
+            (user) => (user as User).age,
+            (age) => Text('$age'),
+            onValueUpdated: (age) => updates.add(age),
+          ),
+        ),
+      );
+
+      userSignal.value = User('John', 26);
+      await tester.pump();
+      expect(updates, [26]);
+    });
+  });
+
+  group('SignalListObserveExtension', () {
+    testWidgets('combines multiple signals with .observe()', (tester) async {
+      final firstName = SignalsWatch.signal('John');
+      final lastName = SignalsWatch.signal('Doe');
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: [firstName, lastName].observe(
+            combine: (values) => '${values[0]} ${values[1]}',
+            builder: (fullName) => Text(fullName),
+          ),
+        ),
+      );
+
+      expect(find.text('John Doe'), findsOneWidget);
+
+      firstName.value = 'Jane';
+      await tester.pump();
+      expect(find.text('Jane Doe'), findsOneWidget);
+
+      lastName.value = 'Smith';
+      await tester.pump();
+      expect(find.text('Jane Smith'), findsOneWidget);
+    });
+
+    testWidgets('list .observe() supports all parameters', (tester) async {
+      final firstName = SignalsWatch.signal('John');
+      final lastName = SignalsWatch.signal('Doe');
+      final updates = <String>[];
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: [firstName, lastName].observe(
+            combine: (values) => '${values[0]} ${values[1]}',
+            builder: (fullName) => Text(fullName),
+            onValueUpdated: (fullName) => updates.add(fullName),
+          ),
+        ),
+      );
+
+      firstName.value = 'Jane';
+      await tester.pump();
+      expect(updates, ['Jane Doe']);
+
+      lastName.value = 'Smith';
+      await tester.pump();
+      expect(updates, ['Jane Doe', 'Jane Smith']);
+    });
+
+    testWidgets('list .observe() works with different signal types',
+        (tester) async {
+      final counter = SignalsWatch.signal(5);
+      final doubled = SignalsWatch.computed(() => counter.value * 2);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: [counter, doubled].observe(
+            combine: (values) => (values[0] as int) + (values[1] as int),
+            builder: (sum) => Text('$sum'),
+          ),
+        ),
+      );
+
+      expect(find.text('15'), findsOneWidget); // 5 + 10
+
+      counter.value = 10;
+      await tester.pump();
+      expect(find.text('30'), findsOneWidget); // 10 + 20
     });
   });
 }

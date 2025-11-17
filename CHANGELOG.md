@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-11-17
+
+### Added
+- **Fluent API extensions** for more ergonomic syntax:
+  - `.observe()` extension on `ReadonlySignal<T>` - watch any signal (regular, computed, fromFuture, fromStream)
+  - `.selectObserve()` extension on `ReadonlySignal<T>` - selector pattern with efficient updates
+  - `.observe()` extension on `List<ReadonlySignal<dynamic>>` - combine multiple signals
+- Comprehensive test coverage for all new extension methods (28 tests total)
+- Example app updated to demonstrate fluent syntax
+
+### Design Decisions
+- Named `.observe()` to avoid conflict with `signals_flutter`'s existing `.watch()` extension
+- Named `.selectObserve()` to avoid conflict with `signals`' existing `.select()` extension
+- All original constructors remain available for backward compatibility
+- Fluent API is purely additive syntax sugar
+
+### Examples
+```dart
+// Single signal - fluent syntax
+counter.observe((value) => Text('$value'))
+
+// Selector pattern - only rebuilds when age changes
+user.selectObserve(
+  (u) => (u as User).age,
+  (age) => Text('Age: $age'),
+)
+
+// Multiple signals - combines values
+[firstName, lastName].observe(
+  combine: (values) => '${values[0]} ${values[1]}',
+  builder: (fullName) => Text(fullName),
+)
+```
+
 ## [0.1.0] - 2025-11-16
 
 ### Added

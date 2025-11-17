@@ -490,3 +490,191 @@ class _SignalsWatchState<T> extends State<SignalsWatch<T>> {
     });
   }
 }
+
+/// Extension on [ReadonlySignal] to provide fluent observe API.
+///
+/// This allows calling `.observe()` directly on any signal for a more
+/// ergonomic syntax:
+///
+/// ```dart
+/// final counter = SignalsWatch.signal(0);
+///
+/// // Instead of:
+/// SignalsWatch.fromSignal(counter, builder: (value) => Text('$value'))
+///
+/// // You can write:
+/// counter.observe((value) => Text('$value'))
+/// ```
+extension SignalObserveExtension<T> on ReadonlySignal<T> {
+  /// Observe this signal and rebuild when it changes.
+  ///
+  /// Example:
+  /// ```dart
+  /// counter.observe(
+  ///   (value) => Text('$value'),
+  ///   onValueUpdated: (value) => print('Counter: $value'),
+  ///   debounce: Duration(milliseconds: 300),
+  /// )
+  /// ```
+  SignalsWatch<T> observe(
+    Widget Function(T) builder, {
+    Key? key,
+    void Function(T value)? onInit,
+    Function? onValueUpdated,
+    void Function(T value)? onAfterBuild,
+    void Function(T value)? onDispose,
+    bool Function(T newValue, T oldValue)? shouldRebuild,
+    bool Function(T newValue, T oldValue)? shouldNotify,
+    bool Function(T a, T b)? equals,
+    Duration? debounce,
+    Duration? throttle,
+    void Function(Object error, StackTrace stack)? onError,
+    Widget Function(Object error)? errorBuilder,
+    Widget Function()? loadingBuilder,
+    String? debugLabel,
+    bool debugPrint = false,
+  }) {
+    return SignalsWatch<T>.fromSignal(
+      this,
+      key: key,
+      builder: builder,
+      onInit: onInit,
+      onValueUpdated: onValueUpdated,
+      onAfterBuild: onAfterBuild,
+      onDispose: onDispose,
+      shouldRebuild: shouldRebuild,
+      shouldNotify: shouldNotify,
+      equals: equals,
+      debounce: debounce,
+      throttle: throttle,
+      onError: onError,
+      errorBuilder: errorBuilder,
+      loadingBuilder: loadingBuilder,
+      debugLabel: debugLabel,
+      debugPrint: debugPrint,
+    );
+  }
+
+  /// Select a specific part of this signal's value and only rebuild when that part changes.
+  ///
+  /// Example:
+  /// ```dart
+  /// final user = SignalsWatch.signal(User(name: 'John', age: 25));
+  ///
+  /// // Only rebuilds when age changes, ignores name changes
+  /// user.selectObserve(
+  ///   (user) => user.age,
+  ///   (age) => Text('Age: $age'),
+  /// )
+  /// ```
+  SignalsWatch<S> selectObserve<S>(
+    S Function(dynamic) selector,
+    Widget Function(S) builder, {
+    Key? key,
+    void Function(S value)? onInit,
+    Function? onValueUpdated,
+    void Function(S value)? onAfterBuild,
+    void Function(S value)? onDispose,
+    bool Function(S newValue, S oldValue)? shouldRebuild,
+    bool Function(S newValue, S oldValue)? shouldNotify,
+    bool Function(S a, S b)? equals,
+    Duration? debounce,
+    Duration? throttle,
+    void Function(Object error, StackTrace stack)? onError,
+    Widget Function(Object error)? errorBuilder,
+    Widget Function()? loadingBuilder,
+    String? debugLabel,
+    bool debugPrint = false,
+  }) {
+    return SignalsWatch<S>.select(
+      this,
+      selector: selector,
+      key: key,
+      builder: builder,
+      onInit: onInit,
+      onValueUpdated: onValueUpdated,
+      onAfterBuild: onAfterBuild,
+      onDispose: onDispose,
+      shouldRebuild: shouldRebuild,
+      shouldNotify: shouldNotify,
+      equals: equals,
+      debounce: debounce,
+      throttle: throttle,
+      onError: onError,
+      errorBuilder: errorBuilder,
+      loadingBuilder: loadingBuilder,
+      debugLabel: debugLabel,
+      debugPrint: debugPrint,
+    );
+  }
+}
+
+/// Extension on [List<ReadonlySignal>] to provide fluent observe API for multiple signals.
+///
+/// This allows calling `.observe()` directly on a list of signals:
+///
+/// ```dart
+/// final firstName = SignalsWatch.signal('John');
+/// final lastName = SignalsWatch.signal('Doe');
+///
+/// // Instead of:
+/// SignalsWatch.fromSignals([firstName, lastName], combine: ..., builder: ...)
+///
+/// // You can write:
+/// [firstName, lastName].observe(
+///   combine: (values) => '${values[0]} ${values[1]}',
+///   builder: (fullName) => Text(fullName),
+/// )
+/// ```
+extension SignalListObserveExtension on List<ReadonlySignal<dynamic>> {
+  /// Observe multiple signals and rebuild when any changes.
+  ///
+  /// Example:
+  /// ```dart
+  /// [firstName, lastName].observe(
+  ///   combine: (values) => '${values[0]} ${values[1]}',
+  ///   builder: (fullName) => Text(fullName),
+  ///   onValueUpdated: (fullName) => print(fullName),
+  /// )
+  /// ```
+  SignalsWatch<R> observe<R>({
+    Key? key,
+    required R Function(List<dynamic>) combine,
+    required Widget Function(R) builder,
+    void Function(R value)? onInit,
+    Function? onValueUpdated,
+    void Function(R value)? onAfterBuild,
+    void Function(R value)? onDispose,
+    bool Function(R newValue, R oldValue)? shouldRebuild,
+    bool Function(R newValue, R oldValue)? shouldNotify,
+    bool Function(R a, R b)? equals,
+    Duration? debounce,
+    Duration? throttle,
+    void Function(Object error, StackTrace stack)? onError,
+    Widget Function(Object error)? errorBuilder,
+    Widget Function()? loadingBuilder,
+    String? debugLabel,
+    bool debugPrint = false,
+  }) {
+    return SignalsWatch<R>.fromSignals(
+      this,
+      key: key,
+      combine: combine,
+      builder: builder,
+      onInit: onInit,
+      onValueUpdated: onValueUpdated,
+      onAfterBuild: onAfterBuild,
+      onDispose: onDispose,
+      shouldRebuild: shouldRebuild,
+      shouldNotify: shouldNotify,
+      equals: equals,
+      debounce: debounce,
+      throttle: throttle,
+      onError: onError,
+      errorBuilder: errorBuilder,
+      loadingBuilder: loadingBuilder,
+      debugLabel: debugLabel,
+      debugPrint: debugPrint,
+    );
+  }
+}

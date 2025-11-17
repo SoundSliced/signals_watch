@@ -117,13 +117,13 @@ class BasicCounterExample extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SignalsWatch.fromSignal(
-          counter,
+        // Using fluent .observe() syntax instead of SignalsWatch.fromSignal
+        counter.observe(
+          (value) =>
+              Text('Count: $value', style: const TextStyle(fontSize: 24)),
           onValueUpdated: (value, previous) {
             debugPrint('Counter changed: $previous -> $value');
           },
-          builder: (value) =>
-              Text('Count: $value', style: const TextStyle(fontSize: 24)),
         ),
         const SizedBox(height: 8),
         Row(
@@ -219,14 +219,13 @@ class SelectorExample extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        SignalsWatch.select(
-          user,
-          selector: (u) => u.age,
+        // Using fluent .selectObserve() syntax
+        user.selectObserve(
+          (u) => (u as User).age,
+          (age) => Text('Age: $age', style: const TextStyle(fontSize: 20)),
           onValueUpdated: (age, previousAge) {
             debugPrint('Age changed: $previousAge -> $age');
           },
-          builder: (age) =>
-              Text('Age: $age', style: const TextStyle(fontSize: 20)),
         ),
         const SizedBox(height: 8),
         Row(
@@ -268,14 +267,14 @@ class MultipleSignalsExample extends StatelessWidget {
 
     return Column(
       children: [
-        SignalsWatch.fromSignals(
-          [firstName, lastName],
+        // Using fluent list .observe() syntax
+        [firstName, lastName].observe(
           combine: (values) => '${values[0]} ${values[1]}',
+          builder: (fullName) =>
+              Text(fullName, style: const TextStyle(fontSize: 20)),
           onValueUpdated: (fullName) {
             debugPrint('Full name: $fullName');
           },
-          builder: (fullName) =>
-              Text(fullName, style: const TextStyle(fontSize: 20)),
         ),
         const SizedBox(height: 8),
         Row(

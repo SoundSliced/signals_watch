@@ -69,11 +69,16 @@ final doubled = SignalsWatch.computed(() => counter.value * 2);
 class MyWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    // Option 1: Fluent syntax (new in 0.2.0)
+    return counter.observe(
+      (value) => Text('$value'),
+      onValueUpdated: (value) => debugPrint('Counter: $value'),
+    );
+    
+    // Option 2: Traditional syntax (still works)
     return SignalsWatch<int>.fromSignal(
       counter,
-      onValueUpdated: (value) {
-        debugPrint('Counter: $value');
-      },
+      onValueUpdated: (value) => debugPrint('Counter: $value'),
       builder: (value) => Text('$value'),
     );
   }
@@ -120,9 +125,37 @@ print('Tracked signals: ${SignalsWatch.size}');
 SignalsWatch.disposeAll();
 ```
 
-## Reactive Widget Constructors
+## Reactive Widget API
 
-### `SignalsWatch.fromSignal` - Single Signal
+### Single Signal - Fluent Syntax (NEW in 0.2.0)
+```dart
+// Works with any signal type: signal, computed, fromFuture, fromStream
+counter.observe(
+  (value) => Text('$value'),
+  onValueUpdated: (value) => print('Value: $value'),
+  debounce: Duration(milliseconds: 300),
+)
+```
+
+### Multiple Signals - Fluent Syntax (NEW in 0.2.0)
+```dart
+[firstName, lastName].observe(
+  combine: (values) => '${values[0]} ${values[1]}',
+  builder: (fullName) => Text(fullName),
+)
+```
+
+### Selector Pattern - Fluent Syntax (NEW in 0.2.0)
+```dart
+user.selectObserve(
+  (u) => (u as User).age,  // Only rebuild when age changes
+  (age) => Text('Age: $age'),
+)
+```
+
+### Traditional Constructors (Still Available)
+
+#### `SignalsWatch.fromSignal` - Single Signal
 ```dart
 SignalsWatch<int>.fromSignal(
   mySignal,
@@ -131,7 +164,7 @@ SignalsWatch<int>.fromSignal(
 )
 ```
 
-### `SignalsWatch.fromSignals` - Multiple Signals
+#### `SignalsWatch.fromSignals` - Multiple Signals
 ```dart
 SignalsWatch<int>.fromSignals(
   [signal1, signal2, signal3],
@@ -140,7 +173,7 @@ SignalsWatch<int>.fromSignals(
 )
 ```
 
-### `SignalsWatch.select` - Selector Pattern
+#### `SignalsWatch.select` - Selector Pattern
 ```dart
 SignalsWatch<String>.select(
   userSignal,
@@ -149,7 +182,7 @@ SignalsWatch<String>.select(
 )
 ```
 
-### `SignalsWatch` - Custom Read
+#### `SignalsWatch` - Custom Read
 ```dart
 SignalsWatch<int>(
   read: () => counter.value * 2 + anotherSignal.value,
@@ -163,13 +196,18 @@ SignalsWatch<int>(
 ```dart
 final searchQuery = SignalsWatch.signal('');
 
+// Fluent syntax
+searchQuery.observe(
+  (query) => TextField(onChanged: (text) => searchQuery.value = text),
+  debounce: Duration(milliseconds: 300),
+  onValueUpdated: (query) => performSearch(query), // Called 300ms after user stops typing
+)
+
+// Or traditional syntax
 SignalsWatch<String>.fromSignal(
   searchQuery,
   debounce: Duration(milliseconds: 300),
-  onValueUpdated: (query) {
-    // Called 300ms after user stops typing
-    performSearch(query);
-  },
+  onValueUpdated: (query) => performSearch(query),
   builder: (query) => TextField(
     onChanged: (text) => searchQuery.value = text,
   ),
@@ -178,13 +216,30 @@ SignalsWatch<String>.fromSignal(
 
 ### Conditional Updates
 ```dart
-SignalsWatch<int>.fromSignal(
-  counter,
+// Fluent syntax
+counter.observe(
+  (value) => Text('$value'),
   shouldNotify: (value, _) => value > 10,  // Only notify above threshold
-  onValueUpdated: (value) {
-    showAlert('Threshold exceeded: $value');
-  },
-  builder: (value) => Text('$value'),
+  onValueUpdated: (value) => showAlert('Threshold exceeded: $value'),
+)
+```
+
+### Combining Multiple Signals
+```dart
+// Fluent syntax
+[firstName, lastName].observe(
+  combine: (values) => '${values[0]} ${values[1]}',
+  builder: (fullName) => Text(fullName),
+  onValueUpdated: (fullName) => print('Full name: $fullName'),
+)
+```
+
+### Efficient Selector Pattern
+```dart
+// Only rebuilds when age changes, ignores name changes
+user.selectObserve(
+  (u) => (u as User).age,
+  (age) => Text('Age: $age'),
 )
 ```
 
@@ -198,18 +253,6 @@ SignalsWatch<int>(
   onError: (error, stack) => logError(error, stack),
   errorBuilder: (error) => ErrorCard(error: error),
   builder: (value) => Text('$value'),
-)
-```
-
-### Selector Pattern (Efficient Updates)
-```dart
-final user = SignalsWatch.signal(User(name: 'John', age: 25));
-
-// Only rebuilds when age changes, ignores name
-SignalsWatch<int>.select(
-  user,
-  selector: (user) => user.age,
-  builder: (age) => Text('Age: $age'),
 )
 ```
 
