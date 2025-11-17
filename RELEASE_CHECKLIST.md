@@ -19,11 +19,11 @@ Use this checklist every time before committing, tagging, and publishing a new v
  - [x] Example app sections are updated or added to demonstrate new APIs and patterns
 
 ## 3. Code & Tests
-- [ ] All code changes are committed
+- [x] All code changes are committed
 - [x] All tests pass (`flutter test`)
 - [x] No analyzer issues (`flutter analyze`)
 - [x] Code is formatted (`dart format .`)
-- [ ] Example app runs without errors
+- [x] Example app runs without errors
 
 ## 4. Metadata & Safety
 - [x] Homepage, repository, and issue tracker URLs in `pubspec.yaml` are correct
@@ -32,16 +32,16 @@ Use this checklist every time before committing, tagging, and publishing a new v
 
 ## 5. Publishing Preparation
 - [x] Run `flutter pub get` in package root
-- [ ] Run `flutter pub publish --dry-run` and resolve any issues
+- [x] Run `flutter pub publish --dry-run` and resolve any issues
 - [x] Review all documentation for typos and outdated info
 
 ## 6. Commit & Tag
-- [ ] Commit all changes with a clear message (e.g., "Release vX.Y.Z")
-- [ ] Tag the commit with the version (e.g., `v0.3.1`)
-- [ ] Push commits and tags to GitHub
+- [x] Commit all changes with a clear message (e.g., "Release vX.Y.Z")
+- [x] Tag the commit with the version (e.g., `v0.3.1`)
+- [x] Push commits and tags to GitHub
 
 ## 7. Publish
-- [ ] Run `dart pub publish` to publish to pub.dev
+- [x] Run `dart pub publish` to publish to pub.dev
 
 ---
 
