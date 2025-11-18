@@ -89,6 +89,11 @@ class ExamplesPage extends StatelessWidget {
             const CustomEqualsExample(),
           ),
           _buildSection(
+            'Transform with .transform() (v0.4.0)',
+            'Transform signal values with error handling',
+            const TransformExample(),
+          ),
+          _buildSection(
             'Computed Signal',
             'Doubled value derived from counter with callbacks',
             const ComputedExample(),
@@ -441,6 +446,110 @@ class _CustomEqualsExampleState extends State<CustomEqualsExample> {
               child: const Text('Increase Age'),
             ),
           ],
+        ),
+      ],
+    );
+  }
+}
+
+// Example 5.5: Transform with .transform() (v0.4.0)
+class TransformExample extends StatefulWidget {
+  const TransformExample({super.key});
+
+  @override
+  State<TransformExample> createState() => _TransformExampleState();
+}
+
+class _TransformExampleState extends State<TransformExample> {
+  final temperatureC = SignalsWatch.signal<double>(25.0);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Temperature Converter with Validation'),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            const Text('Celsius:'),
+            const SizedBox(width: 8),
+            temperatureC.observe(
+              (temp) => Text(
+                '${temp.toStringAsFixed(1)}°C',
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // Using .transform() to transform Celsius to Fahrenheit with validation
+        temperatureC.transform<String>(
+          (celsius) {
+            // Validate temperature range
+            if (celsius < -273.15) {
+              throw ArgumentError('Temperature below absolute zero!');
+            }
+            if (celsius > 1000) {
+              throw ArgumentError('Temperature too high!');
+            }
+            // Convert to Fahrenheit
+            final fahrenheit = (celsius * 9 / 5) + 32;
+            return '${fahrenheit.toStringAsFixed(1)}°F';
+          },
+          builder: (fahrenheitStr) => Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.green.shade50,
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: Colors.green),
+            ),
+            child: Text(
+              'Fahrenheit: $fahrenheitStr',
+              style: const TextStyle(fontSize: 16, color: Colors.green),
+            ),
+          ),
+          onError: (error, stack) {
+            debugPrint('Temperature error: $error');
+          },
+          errorBuilder: (error) => Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: Colors.red),
+            ),
+            child: Text(
+              'Error: ${error.toString().replaceAll('Invalid argument(s): ', '')}',
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () => temperatureC.value += 10,
+              child: const Text('+10°C'),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton(
+              onPressed: () => temperatureC.value -= 10,
+              child: const Text('-10°C'),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton(
+              onPressed: () => temperatureC.value = -300, // Triggers error
+              child: const Text('Test Error'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Try the error button to see errorBuilder in action!',
+          style: TextStyle(fontSize: 12, fontStyle: FontStyle.italic),
         ),
       ],
     );

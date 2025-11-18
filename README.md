@@ -43,6 +43,7 @@ A unified, production-ready reactive framework for `signals_flutter` with auto-r
 
 ### 🎨 Advanced Patterns
 - **Selector pattern**: Only rebuild when selected part of value changes
+- **Transform with `.transform()`**: Transform signal values with error handling (NEW in 0.4.0)
 - **Batch updates**: Efficiently combine multiple signals
 - **Builder caching**: Prevents redundant rebuilds
 - **Modular architecture**: Clean separation of concerns with library parts
@@ -53,7 +54,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  signals_watch: ^0.3.1
+  signals_watch: ^0.4.0
 ```
 
 ## Quick Start
@@ -200,6 +201,17 @@ user.selectObserve(
 )
 ```
 
+### Transform with Error Handling - Fluent Syntax (NEW in 0.4.0)
+```dart
+// Transform signal value with automatic error handling
+mySignal.transform(
+  (value) => value * 2,  // Transformation can throw
+  builder: (result) => Text('$result'),
+  onError: (error, stack) => logError(error),
+  errorBuilder: (error) => ErrorWidget(error),
+)
+```
+
 ### Traditional Constructors (Still Available)
 
 #### `SignalsWatch.fromSignal` - Single Signal
@@ -291,16 +303,50 @@ user.selectObserve(
 ```
 
 ### Error Handling
+
+**NEW in 0.4.0**: Use `.transform()` for transformations with error handling:
+
 ```dart
-SignalsWatch<int>(
-  read: () {
+final mySignal = SignalsWatch.signal(5);
+
+// Fluent .transform() API - transforms value with error handling
+mySignal.transform(
+  (value) {
     if (value < 0) throw Exception('Negative!');
     return value * 2;
+  },
+  builder: (doubled) => Text('Result: $doubled'),
+  onError: (error, stack) => logError(error, stack),
+  errorBuilder: (error) => ErrorCard(error: error),
+);
+```
+
+**Alternative approaches:**
+
+```dart
+// Using custom read function (for complex multi-signal logic)
+SignalsWatch<int>(
+  read: () {
+    final a = signal1.value;
+    final b = signal2.value;
+    if (a < 0 || b < 0) throw Exception('Negative!');
+    return a * b;
   },
   onError: (error, stack) => logError(error, stack),
   errorBuilder: (error) => ErrorCard(error: error),
   builder: (value) => Text('$value'),
-)
+);
+
+// Using computed signal with error-prone logic
+final doubled = SignalsWatch.computed(() {
+  if (mySignal.value < 0) throw Exception('Negative!');
+  return mySignal.value * 2;
+});
+
+doubled.observe(
+  (value) => Text('$value'),
+  errorBuilder: (error) => ErrorCard(error: error),
+);
 ```
 
 ## API Reference
@@ -452,8 +498,9 @@ SelectiveSignalsObserver.onSignalUpdated | user.profile => User(...) (previously
 - Only label signals you want to track
 - Disable in production if needed:
   ```dart
+  // import 'package:flutter/foundation.dart' for kDebugMode
   if (kDebugMode) {
-    SelectiveSignalsObserver.initialize();
+    SignalsWatch.initializeSignalsObserver();
   }
   ```
 

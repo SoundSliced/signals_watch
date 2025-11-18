@@ -6,8 +6,8 @@ Use this checklist every time before committing, tagging, and publishing a new v
 
 ## 1. Version Consistency
 - [x] `pubspec.yaml` version matches intended release
-- [x] `README.md` install snippet uses correct version
-- [x] `PACKAGE_SUMMARY.md` version is up to date
+- [x] `README.md` install snippet uses correct version (ensure the API is correctly portrayed)
+- [x] `PACKAGE_SUMMARY.md` version is up to date and summarry updated with new API changes
 - [x] `CHANGELOG.md` has a section for the new version and date
 
 ## 2. Documentation

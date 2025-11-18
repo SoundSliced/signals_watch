@@ -1,3 +1,15 @@
+## [0.4.0] - 2025-11-18
+
+### Added
+- `.transform()` extension on `ReadonlySignal<T>` for transforming signal values with error handling
+  - Perfect for transformations that might throw exceptions (validation, parsing, computed values)
+  - Includes all SignalsWatch features: error handling, debouncing, lifecycle callbacks, etc.
+  - Example: `mySignal.transform((v) => v * 2, builder: (result) => Text('$result'), errorBuilder: ...)`
+
+### Changed
+- Enhanced error handling documentation with clearer examples
+- Added import comment for `kDebugMode` usage
+
 ## [0.3.1] - 2025-11-17
 
 ### Fixed/Docs

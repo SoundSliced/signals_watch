@@ -4,9 +4,15 @@
 
 ### Package Information
 - **Name**: `signals_watch`
-- **Version**: 0.3.1
+- **Version**: 0.4.0
 - **License**: MIT
 - **Dependencies**: Flutter SDK >=3.10.0, signals ^6.2.0
+
+### What's New in 0.4.0
+- ✅ **`.transform()` extension**: Transform signal values with built-in error handling
+  - Fluent API: `mySignal.transform((value) => transformedValue, builder: ..., errorBuilder: ...)`
+  - Perfect for transformations that might throw (validation, parsing, calculations)
+  - Includes all SignalsWatch features: debouncing, lifecycle callbacks, error handling
 
 ### Package Structure
 

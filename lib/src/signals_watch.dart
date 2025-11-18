@@ -749,6 +749,65 @@ extension SignalObserveExtension<T> on ReadonlySignal<T> {
       debugPrint: debugPrint,
     );
   }
+
+  /// Transform this signal's value and observe the result with error handling.
+  ///
+  /// This is perfect for transformations that might throw exceptions,
+  /// such as validation, parsing, or computed values that can fail.
+  ///
+  /// Example:
+  /// ```dart
+  /// final numberSignal = SignalsWatch.signal(5);
+  ///
+  /// numberSignal.transform(
+  ///   (value) {
+  ///     if (value < 0) throw Exception('Negative!');
+  ///     return value * 2;
+  ///   },
+  ///   builder: (doubled) => Text('$doubled'),
+  ///   onError: (error, stack) => logError(error, stack),
+  ///   errorBuilder: (error) => ErrorCard(error: error),
+  /// )
+  /// ```
+  SignalsWatch<R> transform<R>(
+    R Function(T) transform, {
+    Key? key,
+    required Widget Function(R) builder,
+    void Function(R value)? onInit,
+    Function? onValueUpdated,
+    void Function(R value)? onAfterBuild,
+    void Function(R value)? onDispose,
+    bool Function(R newValue, R oldValue)? shouldRebuild,
+    bool Function(R newValue, R oldValue)? shouldNotify,
+    bool Function(R a, R b)? equals,
+    Duration? debounce,
+    Duration? throttle,
+    void Function(Object error, StackTrace stack)? onError,
+    Widget Function(Object error)? errorBuilder,
+    Widget Function()? loadingBuilder,
+    String? debugLabel,
+    bool debugPrint = false,
+  }) {
+    return SignalsWatch<R>(
+      key: key,
+      read: () => transform(value),
+      builder: builder,
+      onInit: onInit,
+      onValueUpdated: onValueUpdated,
+      onAfterBuild: onAfterBuild,
+      onDispose: onDispose,
+      shouldRebuild: shouldRebuild,
+      shouldNotify: shouldNotify,
+      equals: equals,
+      debounce: debounce,
+      throttle: throttle,
+      onError: onError,
+      errorBuilder: errorBuilder,
+      loadingBuilder: loadingBuilder,
+      debugLabel: debugLabel,
+      debugPrint: debugPrint,
+    );
+  }
 }
 
 /// Extension on [List<ReadonlySignal>] to provide fluent observe API for multiple signals.
