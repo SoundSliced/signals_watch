@@ -7,7 +7,7 @@ Use this checklist every time before committing, tagging, and publishing a new v
 ## 1. Version Consistency
 - [x] `pubspec.yaml` version matches intended release
 - [x] `README.md` install snippet uses correct version (ensure the API is correctly portrayed)
-- [x] `PACKAGE_SUMMARY.md` version is up to date and summarry updated with new API changes
+- [x] `PACKAGE_SUMMARY.md` version is up to date and summary updated with new API changes
 - [x] `CHANGELOG.md` has a section for the new version and date
 
 ## 2. Documentation
@@ -36,8 +36,8 @@ Use this checklist every time before committing, tagging, and publishing a new v
 - [x] Review all documentation for typos and outdated info
 
 ## 6. Commit & Tag
-- [x] Commit all changes with a clear message (e.g., "Release vX.Y.Z")
-- [x] Tag the commit with the version (e.g., `v0.3.1`)
+- [x] Commit all changes with a clear message (e.g., "Release v1.0.0")
+- [x] Tag the commit with the version (e.g., `v1.0.0`)
 - [x] Push commits and tags to GitHub
 
 ## 7. Publish

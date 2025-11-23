@@ -1,6 +1,16 @@
 ## 1.0.0
 
-* Version 1.0.0
+### Stable Release
+- First stable release of `signals_watch`.
+- Includes all features from previous versions, such as:
+  - Signal-level lifecycle callbacks (`onInit`, `onValueUpdated`, `onDispose`).
+  - Fluent APIs for observing signals (`.observe()`, `.selectObserve()`).
+  - Timing controls (`debounce`, `throttle`).
+  - Error handling with `onError` and `errorBuilder`.
+  - Async helpers (`fromFuture`, `fromStream`).
+  - Debugging tools (`debugLabel`, `SelectiveSignalsObserver`).
+- Comprehensive examples and test coverage.
+- Documentation updated to reflect all features.
 
 ## [0.4.0] - 2025-11-18
 
