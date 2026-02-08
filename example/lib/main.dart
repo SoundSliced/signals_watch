@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:signals_watch/signals_watch.dart';
 
 void main() {

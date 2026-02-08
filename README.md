@@ -43,13 +43,17 @@ A unified, production-ready reactive framework for `signals_flutter` with auto-r
 - **Builder caching**: Prevents redundant rebuilds
 - **Modular architecture**: Clean separation of concerns with library parts
 
+## Demo
+
+![SignalsWatch Example](https://raw.githubusercontent.com/SoundSliced/signals_watch/main/example/assets/example.gif)
+
 ## Installation
 
 Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  signals_watch: ^1.0.0
+  signals_watch: ^2.0.0
 ```
 
 ## Quick Start

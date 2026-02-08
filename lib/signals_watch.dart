@@ -42,17 +42,4 @@
 /// ```
 library;
 
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:signals/signals.dart' as s;
-import 'package:signals/signals_flutter.dart';
-
-// Re-export full flutter + core API except the factories we override.
-export 'package:signals/signals_flutter.dart' hide signal, computed;
-
-// Internal parts for readability and maintainability.
-part 'src/signals_watch_metadata.dart';
-part 'src/signals_watch_registry.dart';
-part 'src/signals_watch_observer.dart';
-part 'src/signals_watch_async.dart';
-part 'src/signals_watch.dart';
+export 'package:s_packages/s_packages.dart';
