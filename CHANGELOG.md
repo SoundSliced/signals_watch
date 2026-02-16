@@ -1,7 +1,7 @@
  
 
 ## 2.1.0
-- `s_packages` dependency upgraded to ^1.3.0
+- `s_packages` dependency upgraded
 - Metadata is now always stored for signals created via `SignalsWatch.signal()`, ensuring `.reset()` works even without lifecycle callbacks
 - `onValueUpdated` callback now supports zero-parameter signatures (fallback invocation if one-parameter call fails)
 
