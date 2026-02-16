@@ -53,7 +53,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  signals_watch: ^2.0.0
+  signals_watch: ^2.1.0
 ```
 
 ## Quick Start
@@ -98,6 +98,11 @@ The `example/` directory contains a comprehensive set of examples demonstrating 
 - Debugging with labeled signals
 
 Refer to the `example/lib/main.dart` file for detailed implementations.
+
+## What's New in v2.1.0
+
+- Metadata is now always stored for signals created via `SignalsWatch.signal()`, ensuring `.reset()` works even without lifecycle callbacks
+- `onValueUpdated` callback now supports zero-parameter signatures — if a one-parameter invocation fails, the callback is retried with zero parameters as a fallback
 
 ## License
 
