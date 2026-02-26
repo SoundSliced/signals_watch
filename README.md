@@ -53,7 +53,7 @@ Add to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  signals_watch: ^2.1.1
+  signals_watch: ^3.0.0
 ```
 
 ## Quick Start
